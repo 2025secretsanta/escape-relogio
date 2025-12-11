@@ -22,14 +22,14 @@
   }
   .card{
     width:100%;
-    max-width:520px; /* bom para telemóvel e tablet */
+    max-width:520px;
     background:var(--card);
     border-radius:14px;
     box-shadow:0 6px 24px rgba(0,0,0,0.09);
     padding:28px;
     text-align:center;
   }
-  h1{margin:0 0 16px;font-size:20px;color:var(--text);}
+  h1{margin:0 0 16px;font-size:22px;color:var(--text);}
   p.sub{margin:0 0 18px;color:#555;}
   .controls{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;}
   select{
@@ -52,7 +52,7 @@
 <body>
   <div class="card" role="main" aria-labelledby="qTitle">
     <h1 id="qTitle">Que horas são?</h1>
-    <p class="sub">Ajusta os menus e pressiona "Submeter". Tem de ser exatamente <strong>00:58</strong>.</p>
+    <p class="sub">Ajusta os menus e pressiona "Submeter".</p>
 
     <div class="controls" aria-hidden="false">
       <label for="horaSelect" style="display:none">Hora</label>
@@ -73,14 +73,15 @@
   const targetHour = '00';
   const targetMin = '58';
 
-  // Preenche selects corretamente (00-23 e 00-59) sem template literal dentro do HTML
   function pad(n){ return String(n).padStart(2,'0'); }
+
   for(let h=0; h<24; h++){
     const opt = document.createElement('option');
     opt.value = pad(h);
     opt.textContent = pad(h);
     horaEl.appendChild(opt);
   }
+
   for(let m=0; m<60; m++){
     const opt = document.createElement('option');
     opt.value = pad(m);
@@ -88,25 +89,19 @@
     minEl.appendChild(opt);
   }
 
-  // Define valores iniciais (podes ajustar se quiseres)
   horaEl.value = '00';
   minEl.value = '00';
 
-  // Submeter
   document.getElementById('submitBtn').addEventListener('click', function(){
-    resultEl.textContent = ''; // limpar
     const h = horaEl.value;
     const mm = minEl.value;
     if(h === targetHour && mm === targetMin){
       resultEl.textContent = 'Correto! 🎉';
-      // aqui podes adicionar mostrar imagem/pista automaticamente
-      // exemplo: mostrar uma imagem ou redirect -> comentar/editar conforme precisares
     } else {
       resultEl.textContent = 'Tenta outra vez.';
     }
   });
 
-  // Para evitar qualquer comportamento estranho no telemóvel (enter, form submit)
   document.addEventListener('touchstart', function(){}, {passive:true});
 </script>
 </body>
