@@ -1,90 +1,113 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Que horas são?</title>
 <style>
-    body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-family: sans-serif;
-        height: 100vh;
-        margin: 0;
-        background: #f7f7f7;
-    }
-
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 20px;
-    }
-
-    select {
-        font-size: 2rem;
-        padding: 10px;
-        margin: 10px;
-    }
-
-    button {
-        margin-top: 20px;
-        font-size: 1.5rem;
-        padding: 15px 30px;
-    }
-
-    #resultado {
-        margin-top: 20px;
-        font-size: 1.8rem;
-        font-weight: bold;
-    }
+  :root{
+    --bg:#fafafa;
+    --card:#ffffff;
+    --accent:#2b6cb0;
+    --text:#111;
+  }
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    padding:20px;
+    box-sizing:border-box;
+  }
+  .card{
+    width:100%;
+    max-width:520px; /* bom para telemóvel e tablet */
+    background:var(--card);
+    border-radius:14px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.09);
+    padding:28px;
+    text-align:center;
+  }
+  h1{margin:0 0 16px;font-size:20px;color:var(--text);}
+  p.sub{margin:0 0 18px;color:#555;}
+  .controls{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;}
+  select{
+    font-size:20px;padding:12px 14px;border-radius:8px;border:1px solid #ddd;
+    appearance:none;-webkit-appearance:none; -moz-appearance:none;
+    background:white; min-width:120px;
+  }
+  button{
+    margin-top:18px;background:var(--accent);color:#fff;border:0;padding:12px 20px;
+    font-size:18px;border-radius:10px;cursor:pointer;
+  }
+  #resultado{margin-top:14px;font-weight:600;font-size:18px;min-height:26px}
+  @media (max-width:420px){
+    .card{padding:20px}
+    select{font-size:18px;min-width:100px;padding:10px}
+    button{font-size:16px;padding:10px 16px}
+  }
 </style>
 </head>
 <body>
+  <div class="card" role="main" aria-labelledby="qTitle">
+    <h1 id="qTitle">Que horas são?</h1>
+    <p class="sub">Ajusta os menus e pressiona "Submeter". Tem de ser exatamente <strong>00:58</strong>.</p>
 
-<h1>Que horas são?</h1>
+    <div class="controls" aria-hidden="false">
+      <label for="horaSelect" style="display:none">Hora</label>
+      <select id="horaSelect" aria-label="Hora (hh)"></select>
 
-<div>
-    <select id="horas">
-        <!-- horas 00-23 -->
-        <option value="00">00</option>
-        <option value="01">01</option>
-        <option value="02">02</option>
-        <option value="03">03</option>
-        <option value="04">04</option>
-        <option value="05">05</option>
-        <option value="06">06</option>
-        <option value="07">07</option>
-        <option value="08">08</option>
-        <option value="09">09</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
-        <option value="13">13</option>
-        <option value="14">14</option>
-        <option value="15">15</option>
-        <option value="16">16</option>
-        <option value="17">17</option>
-        <option value="18">18</option>
-        <option value="19">19</option>
-        <option value="20">20</option>
-        <option value="21">21</option>
-        <option value="22">22</option>
-        <option value="23">23</option>
-    </select>
+      <label for="minSelect" style="display:none">Minuto</label>
+      <select id="minSelect" aria-label="Minuto (mm)"></select>
+    </div>
 
-    <select id="minutos">
-        <!-- minutos 00-59 -->
-        ${[...Array(60).keys()].map(n => 
-            `<option value="${String(n).padStart(2,'0')}">${String(n).padStart(2,'0')}</option>`
-        ).join('')}
-    </select>
-</div>
-
-<button onclick="checkTime()">Submeter</button>
-
-<div id="resultado"></div>
+    <button id="submitBtn">Submeter</button>
+    <div id="resultado" role="status" aria-live="polite"></div>
+  </div>
 
 <script>
-function checkTime() {
-    const h = document.getElementById("horas").value;
-    const m = document.getElementById("minutos"
+  const horaEl = document.getElementById('horaSelect');
+  const minEl = document.getElementById('minSelect');
+  const resultEl = document.getElementById('resultado');
+  const targetHour = '00';
+  const targetMin = '58';
+
+  // Preenche selects corretamente (00-23 e 00-59) sem template literal dentro do HTML
+  function pad(n){ return String(n).padStart(2,'0'); }
+  for(let h=0; h<24; h++){
+    const opt = document.createElement('option');
+    opt.value = pad(h);
+    opt.textContent = pad(h);
+    horaEl.appendChild(opt);
+  }
+  for(let m=0; m<60; m++){
+    const opt = document.createElement('option');
+    opt.value = pad(m);
+    opt.textContent = pad(m);
+    minEl.appendChild(opt);
+  }
+
+  // Define valores iniciais (podes ajustar se quiseres)
+  horaEl.value = '00';
+  minEl.value = '00';
+
+  // Submeter
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    resultEl.textContent = ''; // limpar
+    const h = horaEl.value;
+    const mm = minEl.value;
+    if(h === targetHour && mm === targetMin){
+      resultEl.textContent = 'Correto! 🎉';
+      // aqui podes adicionar mostrar imagem/pista automaticamente
+      // exemplo: mostrar uma imagem ou redirect -> comentar/editar conforme precisares
+    } else {
+      resultEl.textContent = 'Tenta outra vez.';
+    }
+  });
+
+  // Para evitar qualquer comportamento estranho no telemóvel (enter, form submit)
+  document.addEventListener('touchstart', function(){}, {passive:true});
+</script>
+</body>
+</html>
