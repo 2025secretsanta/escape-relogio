@@ -2,152 +2,78 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<title>Ajusta o Relógio</title>
+<title>Que horas são?</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    text-align:center;
-    padding-top:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    font-family:sans-serif;
+    margin-top:40px;
   }
-
-  .clock {
-    position: relative;
-    width: 260px;
-    height: 260px;
-    margin: 20px auto;
-    border: 8px solid #333;
-    border-radius: 50%;
-    background: white;
-    touch-action: none;
+  .hora {
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
   }
-
-  .number {
-    position: absolute;
-    font-weight: bold;
-    font-size: 16px;
-    transform: translate(-50%, -50%);
+  select {
+    font-size:24px;
+    padding:10px;
   }
-
-  .hand {
-    position: absolute;
-    width: 50%;
-    height: 4px;
-    background: black;
-    top: 50%;
-    left: 50%;
-    transform-origin: left;
-  }
-
-  .hour { width: 35%; height: 6px; }
-  .minute { height: 4px; }
-  .second { height: 2px; background: red; }
-
   button {
-    font-size: 18px;
-    padding: 10px 20px;
-    margin-top: 15px;
+    padding:12px 20px;
+    font-size:20px;
+    margin-top:10px;
   }
-
-  #mensagem {
-    margin-top: 15px;
-    font-size: 18px;
-  }
-
-  #ok {
-    display:none;
+  #resultado {
     margin-top:20px;
+    font-size:22px;
+    font-weight:bold;
   }
 </style>
 </head>
 <body>
 
-<h2>🕒 Ajusta o relógio</h2>
-<p>Coloca-o na hora certa.</p>
+<h2>Que horas são?</h2>
 
-<div class="clock" id="clock">
-  <div class="hand hour" id="hour"></div>
-  <div class="hand minute" id="minute"></div>
-  <div class="hand second" id="second"></div>
+<div class="hora">
+  <select id="h"></select>
+  <span style="font-size:28px;">:</span>
+  <select id="m"></select>
+  <span style="font-size:28px;">:</span>
+  <select id="s"></select>
 </div>
 
-<button onclick="verificar()">Submeter</button>
-
-<div id="mensagem"></div>
-<div id="ok">
-  <h3>✅ Correto</h3>
-  <p>Avança.</p>
-</div>
+<button onclick="checkTime()">Submeter</button>
+<div id="resultado"></div>
 
 <script>
-  const clock = document.getElementById("clock");
+// Preencher selects
+for(let i=0;i<24;i++){
+  document.getElementById("h").innerHTML += `<option value="${i}">${String(i).padStart(2,'0')}</option>`;
+}
+for(let i=0;i<60;i++){
+  document.getElementById("m").innerHTML += `<option value="${i}">${String(i).padStart(2,'0')}</option>`;
+  document.getElementById("s").innerHTML += `<option value="${i}">${String(i).padStart(2,'0')}</option>`;
+}
 
-  // === criar números ===
-  for(let i=1;i<=12;i++){
-    const n = document.createElement("div");
-    n.className = "number";
-    n.textContent = i;
+function checkTime(){
+  const h = parseInt(document.getElementById("h").value);
+  const m = parseInt(document.getElementById("m").value);
+  const s = parseInt(document.getElementById("s").value);
 
-    const ang = (i/12)*2*Math.PI;
-    const r = 110;
+  // A HORA CORRETA
+  const TH = 0;
+  const TM = 58;
+  const TS = 53;
 
-    n.style.left = 130 + r*Math.sin(ang) + "px";
-    n.style.top  = 130 - r*Math.cos(ang) + "px";
-
-    clock.appendChild(n);
+  // margem de erro opcional (aqui 0 para preciso)
+  if(h === TH && m === TM && s === TS){
+    document.getElementById("resultado").innerText = "Correto! 🎉";
+  } else {
+    document.getElementById("resultado").innerText = "Tenta outra vez.";
   }
-
-  // === hora alvo ===
-  const alvo = { h:0, m:58, s:53 };
-
-  const tolerancia = { h:1, m:2, s:3 };
-
-  let h=0, m=0, s=0;
-
-  function angulo(e) {
-    const r = clock.getBoundingClientRect();
-    const x = e.touches[0].clientX - (r.left + r.width/2);
-    const y = e.touches[0].clientY - (r.top + r.height/2);
-    return (Math.atan2(y,x)*180/Math.PI+450)%360;
-  }
-
-  function setHand(e, tipo) {
-    const d = angulo(e);
-    if(tipo==="hour") h = Math.round(d/30)%12;
-    if(tipo==="minute") m = Math.round(d/6)%60;
-    if(tipo==="second") s = Math.round(d/6)%60;
-    draw();
-  }
-
-  function draw() {
-    hour.style.transform = `rotate(${(h%12)*30 + m*0.5}deg)`;
-    minute.style.transform = `rotate(${m*6}deg)`;
-    second.style.transform = `rotate(${s*6}deg)`;
-  }
-
-  ["hour","minute","second"].forEach(t=>{
-    document.getElementById(t).addEventListener("touchmove",e=>{
-      e.preventDefault();
-      setHand(e,t);
-    },{passive:false});
-  });
-
-  function perto(a,b,t){ return Math.abs(a-b)<=t; }
-
-  function verificar() {
-    if (
-      perto(h,alvo.h,tolerancia.h) &&
-      perto(m,alvo.m,tolerancia.m) &&
-      perto(s,alvo.s,tolerancia.s)
-    ) {
-      mensagem.textContent="";
-      ok.style.display="block";
-    } else {
-      mensagem.textContent="❌ Ainda não está certo.";
-    }
-  }
-
-  draw();
+}
 </script>
 
 </body>
